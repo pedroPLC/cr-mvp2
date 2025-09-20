@@ -1,6 +1,5 @@
 version: 2
 updates:
-  # Mantém suas GitHub Actions atualizadas
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
