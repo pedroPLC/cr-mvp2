@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CR Coach (MVP)</title>
-  <meta name="description" content="Treine melhor no Clash Royale: veja seu histórico de batalhas, meta da semana e receba recomendações de ajustes de deck." />
+  <meta name="description" content="Cole seu TAG e receba insights automáticos: winrate, streak, melhor horário, recomendações vs meta e ajustes de deck. Histórico em outra aba." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300E5FF'/%3E%3Ctext x='50' y='58' font-size='42' text-anchor='middle' fill='black' font-family='Arial'%3ECR%3C/text%3E%3C/svg%3E" />
   <style>
     :root{
@@ -25,23 +25,15 @@
     .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); color:var(--text); box-shadow:var(--shadow); transition:.2s}
     .btn:hover{transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,.45)}
     .btn.brand{border-color:transparent; background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#061018; font-weight:700}
-    .hero{padding:64px 0 32px}
-    .hero-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:28px; align-items:center}
-    .pill{display:inline-flex; align-items:center; gap:8px; background:rgba(0,229,255,.08); color:#9ef9ff; border:1px solid rgba(0,229,255,.25); border-radius:999px; padding:8px 12px; font-size:13px; margin-bottom:16px}
-    .h1{font-size:clamp(28px, 4.2vw, 48px); line-height:1.05; letter-spacing:.2px; margin:0 0 14px}
-    .lead{color:var(--muted); font-size:clamp(14px, 2.1vw, 18px); margin:0 0 24px}
+    .hero{padding:48px 0 24px}
     .panel{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.1); border-radius:16px; box-shadow:var(--shadow)}
     .panel-pad{padding:18px}
     .input{width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:#0c1322; color:var(--text); outline:none}
     .input:focus{border-color:var(--brand); box-shadow:0 0 0 4px var(--ring)}
-    .grid{display:grid; gap:18px}
-    .grid-3{grid-template-columns:repeat(3, 1fr)}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px}
-    .card h3{margin:0 0 6px; font-size:18px}
     .muted{color:var(--muted)}
-    .table{width:100%; border-collapse:collapse; font-size:14px}
-    .table th, .table td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.07)}
-    .badge{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); font-size:12px}
+    .tabs{display:flex; gap:10px; margin-top:12px}
+    .tab{padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); cursor:pointer}
+    .tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#061018; border-color:transparent; font-weight:700}
     .kpis{display:grid; gap:14px; grid-template-columns:repeat(4, minmax(150px,1fr)); margin-top:16px}
     .kpi{background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px}
     .kpi h4{margin:0 0 6px; font-size:14px; color:#b7c4d6}
@@ -49,295 +41,212 @@
     .kpi small{color:#8aa0b6}
     .tips{margin-top:12px; color:#cfe2ff}
     .tips li{margin:6px 0}
-    /* Resultado colorido */
+    .table{width:100%; border-collapse:collapse; font-size:14px}
+    .table th, .table td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.07)}
     .win  td:nth-child(3){ color:var(--ok); font-weight:700 }
     .lose td:nth-child(3){ color:var(--bad); font-weight:700 }
     .draw td:nth-child(3){ color:var(--mid); font-weight:700 }
-    /* Recomendações */
     .reco{display:grid; gap:14px; grid-template-columns:1fr}
     .reco-item{border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02))}
     .swap{display:inline-block; margin:6px 0; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); font-size:13px}
     footer{padding:42px 0; color:var(--muted); text-align:center; border-top:1px solid rgba(255,255,255,.06); margin-top:48px}
-    @media (max-width: 900px){ .hero-grid{grid-template-columns:1fr} .grid-3{grid-template-columns:1fr} .kpis{grid-template-columns:1fr 1fr} }
+    @media (max-width: 900px){ .kpis{grid-template-columns:1fr 1fr} }
   </style>
 </head>
 <body>
-  <!-- NAV -->
   <header>
     <div class="container nav">
-      <a class="brand" href="#">
-        <span class="brand-dot"></span> CR Coach
-      </a>
-      <div class="nav-right">
-        <a class="btn hide-sm" href="#como-usar">Como usar</a>
-        <a class="btn brand" href="#coach">Abrir Coach</a>
-      </div>
+      <a class="brand" href="#"><span class="brand-dot"></span> CR Coach</a>
+      <div class="nav-right"><a class="btn brand" href="#coach">Abrir Coach</a></div>
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container hero-grid">
-      <div>
-        <div class="pill">MVP • Visual limpo • Responsivo</div>
-        <h1 class="h1">Treine melhor no Clash Royale com <span style="background:linear-gradient(135deg,var(--brand),var(--brand-2)); -webkit-background-clip:text; background-clip:text; color:transparent">insights claros</span>.</h1>
-        <p class="lead">Cole seu <strong>TAG</strong>, veja o histórico, receba <strong>recomendações vs meta</strong> e ajuste seu deck sem complicação.</p>
-        <div style="display:flex; gap:12px; flex-wrap:wrap">
-          <a class="btn brand" href="#coach">Começar agora</a>
-          <a class="btn" href="#features">Ver recursos</a>
-        </div>
-      </div>
-
-      <div class="panel panel-pad">
-        <h3 style="margin:0 0 10px">Prévia de resultados</h3>
-        <p class="muted" style="margin-top:0">Exemplo do que você verá ao usar o Coach.</p>
-        <div class="grid">
-          <div class="card">
-            <div class="badge">Taxa de vitória • 63%</div>
-            <div class="muted">Últimas 20 partidas</div>
-          </div>
-          <div class="card">
-            <div class="badge">Deck mais jogado</div>
-            <div class="muted">Gigante • Arqueiras • Zap…</div>
-          </div>
-          <div class="card">
-            <div class="badge">Dica rápida</div>
-            <div class="muted">Você performa melhor de 18h–22h.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- COMO USAR -->
-  <section id="como-usar" class="container">
-    <h2 style="margin:0 0 12px">Como usar</h2>
-    <p class="muted" style="margin-top:0">3 passos simples — sem cadastro.</p>
-    <div class="grid grid-3">
-      <div class="card"><h3>1) Copie o TAG</h3><p class="muted">No Clash Royale, pegue o seu TAG (ex.: <code>#ABCD123</code>).</p></div>
-      <div class="card"><h3>2) Cole e busque</h3><p class="muted">Cole abaixo e clique em <em>Ver batalhas</em>.</p></div>
-      <div class="card"><h3>3) Veja insights</h3><p class="muted">Winrate, streak, melhor horário, e agora recomendações vs meta.</p></div>
-    </div>
-  </section>
-
-  <!-- COACH -->
-  <section id="coach" class="container" style="margin-top:28px">
+  <section id="coach" class="container hero">
     <div class="panel panel-pad">
-      <h2 style="margin:0 0 10px">Seu histórico</h2>
-      <p class="muted" style="margin:0 0 12px">Cole o TAG do jogador (com ou sem <code>#</code>).</p>
+      <h2 style="margin:0 0 10px">CR Coach</h2>
+      <p class="muted" style="margin:0 0 12px">Cole o TAG (com ou sem <code>#</code>) para ver seu perfil, insights e recomendações. O histórico fica em outra aba.</p>
+
       <div style="display:flex; gap:10px; flex-wrap:wrap">
-        <input id="tagInput" class="input" placeholder="#ABCD123" style="flex:1; min-width:220px" />
-        <button id="btnFetch" class="btn brand">Ver batalhas</button>
+        <input id="tagInput" class="input" placeholder="#ABCD123" style="flex:1; min-width:240px" />
+        <button id="btnFetch" class="btn brand">Ver insights</button>
       </div>
 
       <div id="msg" class="muted" style="margin-top:12px"></div>
 
-      <div id="results" style="margin-top:16px; overflow:auto; display:none">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Modo</th>
-              <th>Resultado</th>
-              <th>Oponente</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
+      <!-- Header do perfil -->
+      <div id="profile" class="panel panel-pad" style="display:none; margin-top:12px">
+        <div id="pName" style="font-size:20px; font-weight:800">Player</div>
+        <div id="pMeta" class="muted" style="margin-top:4px">#TAG • Arena • Troféus</div>
+      </div>
+
+      <!-- Abas -->
+      <div class="tabs" id="tabs" style="display:none">
+        <div id="tab-insights" class="tab active">Insights & Recomendações</div>
+        <div id="tab-history" class="tab">Histórico</div>
       </div>
 
       <!-- INSIGHTS -->
-      <div id="insightsPanel" style="display:none; margin-top:16px">
-        <h3 style="margin:10px 0 8px">Insights</h3>
+      <div id="insightsSection" style="display:none; margin-top:12px">
         <div class="kpis">
-          <div class="kpi">
-            <h4>Winrate</h4>
-            <div class="big" id="kpiWinrate">--%</div>
-            <small id="kpiWL">– vit / – der / – emp</small>
-          </div>
-          <div class="kpi">
-            <h4>Streak</h4>
-            <div class="big" id="kpiStreak">–</div>
-            <small>sequência atual</small>
-          </div>
-          <div class="kpi">
-            <h4>Melhor horário (3h)</h4>
-            <div class="big" id="kpiWindow">–</div>
-            <small id="kpiWindowNote"></small>
-          </div>
-          <div class="kpi">
-            <h4>Deck mais usado</h4>
-            <div class="big" id="kpiDeck">–</div>
-            <small id="kpiDeckNote"></small>
-          </div>
+          <div class="kpi"><h4>Winrate</h4><div class="big" id="kpiWinrate">--%</div><small id="kpiWL">– vit / – der / – emp</small></div>
+          <div class="kpi"><h4>Streak</h4><div class="big" id="kpiStreak">–</div><small>sequência atual</small></div>
+          <div class="kpi"><h4>Melhor horário (3h)</h4><div class="big" id="kpiWindow">–</div><small id="kpiWindowNote"></small></div>
+          <div class="kpi"><h4>Deck mais usado</h4><div class="big" id="kpiDeck">–</div><small id="kpiDeckNote"></small></div>
         </div>
         <ul class="tips" id="tipsList"></ul>
+
+        <div id="recoPanel" style="display:none; margin-top:18px">
+          <h3 style="margin:10px 0 8px">Recomendações vs Meta</h3>
+          <div class="muted" id="myDeckView" style="margin-bottom:6px"></div>
+          <div class="reco" id="recoList"></div>
+          <div class="muted" id="recoFoot" style="margin-top:8px"></div>
+          <div class="muted" style="margin-top:8px; font-size:12px">Fonte de meta: RoyaleAPI (7d, Ranked). Use como referência e ajuste ao seu estilo.</div>
+        </div>
       </div>
 
-      <!-- RECOMENDAÇÕES -->
-      <div id="recoPanel" style="display:none; margin-top:18px">
-        <h3 style="margin:10px 0 8px">Recomendações vs Meta</h3>
-        <div class="muted" id="myDeckView" style="margin-bottom:6px"></div>
-        <div class="reco" id="recoList"></div>
-        <div class="muted" id="recoFoot" style="margin-top:8px"></div>
-        <div class="muted" style="margin-top:8px; font-size:12px">
-          Fonte de meta: RoyaleAPI (decks populares / 7 dias / Ranked). Recomendo jogar mais partidas para calibrar as sugestões.
-        </div>
+      <!-- HISTÓRICO -->
+      <div id="historySection" style="display:none; margin-top:12px; overflow:auto">
+        <table class="table">
+          <thead><tr><th>Data</th><th>Modo</th><th>Resultado</th><th>Oponente</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
       </div>
     </div>
   </section>
 
-  <footer>
-    <div class="container">© <span id="y"></span> CR Coach — MVP. Feito com ♥</div>
-  </footer>
+  <footer><div class="container">© <span id="y"></span> CR Coach — MVP</div></footer>
 
   <script>
-    // ano
     document.getElementById('y').textContent = new Date().getFullYear();
 
     // utils
-    function cleanTag(tag){
-      return String(tag || '').trim().replace(/^#/, '').toUpperCase();
-    }
+    const $ = (id) => document.getElementById(id);
+    function cleanTag(tag){ return String(tag || '').trim().replace(/^#/, '').toUpperCase(); }
     function pad2(n){ return String(n ?? '').padStart(2,'0'); }
     function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-    // botão
-    document.getElementById('btnFetch').addEventListener('click', async () => {
-      const raw = document.getElementById('tagInput').value;
-      const tag = cleanTag(raw);
-      const msg = document.getElementById('msg');
-      const tbody = document.getElementById('tbody');
-      const results = document.getElementById('results');
+    // abas
+    function showTab(which){
+      const ins = $('insightsSection'), his = $('historySection');
+      $('tab-insights').classList.toggle('active', which==='insights');
+      $('tab-history').classList.toggle('active', which==='history');
+      ins.style.display = which==='insights' ? 'block' : 'none';
+      his.style.display = which==='history' ? 'block' : 'none';
+    }
+    $('tab-insights')?.addEventListener('click', () => showTab('insights'));
+    $('tab-history')?.addEventListener('click', () => showTab('history'));
 
-      if(!tag){ msg.textContent = 'Digite seu TAG para buscar.'; return; }
+    // botão principal
+    $('btnFetch').addEventListener('click', () => runCoach(cleanTag($('tagInput').value)));
 
-      msg.textContent = 'Buscando...';
-      tbody.innerHTML = '';
-      results.style.display = 'none';
-      document.getElementById('insightsPanel').style.display = 'none';
-      document.getElementById('recoPanel').style.display = 'none';
+    // suporte a ?tag=...
+    (function initFromQuery(){
+      const qp = new URLSearchParams(location.search);
+      const t = qp.get('tag');
+      if (t) { $('tagInput').value = t; runCoach(cleanTag(t)); }
+    })();
+
+    async function runCoach(tag){
+      if(!tag){ $('msg').textContent = 'Digite seu TAG para buscar.'; return; }
+      $('msg').textContent = 'Buscando…';
+      $('profile').style.display = 'none';
+      $('tabs').style.display = 'none';
+      $('insightsSection').style.display = 'none';
+      $('historySection').style.display = 'none';
+      $('recoPanel').style.display = 'none';
+      $('tbody').innerHTML = '';
 
       try {
-        // 1) Batalhas
-        const res = await fetch(`/api/battlelog?tag=${encodeURIComponent(tag)}`);
+        const res = await fetch(`/api/coach?tag=${encodeURIComponent(tag)}`);
         if(!res.ok) throw new Error('Falha ao buscar');
-        const data = await res.json();
-        if(!Array.isArray(data) || data.length === 0){
-          msg.textContent = 'Não encontrei batalhas para esse TAG.';
-          return;
+        const all = await res.json();
+
+        // Atualiza URL com ?tag=
+        try { history.replaceState({}, '', `?tag=${encodeURIComponent(tag)}`); } catch {}
+
+        // Perfil
+        if (all.player) {
+          $('pName').textContent = `${all.player.name} (${all.player.level})`;
+          $('pMeta').textContent = `${all.player.tag || '#'+tag} • ${all.player.arena || 'Arena'} • ${all.player.trophies ?? 0} troféus`;
+          $('profile').style.display = 'block';
         }
 
-        // monta tabela
+        // Histórico (em aba separada)
+        const data = Array.isArray(all.battles) ? all.battles : [];
         for (const b of data.slice(0, 20)) {
           const tr = document.createElement("tr");
-          const date = b.battleTime ? new Date(b.battleTime).toLocaleString() : "-";
+          let dateStr = '-';
+          if (b.battleTime) {
+            const dt = new Date(b.battleTime);
+            if (!isNaN(dt.getTime())) dateStr = dt.toLocaleString();
+          }
           const mode = b.gameMode?.name || b.type || "-";
-          let outcome = "-";
-          let cls = "";
-
+          let outcome = "-", cls = "";
           if (b.opponentCrowns != null && b.teamCrowns != null) {
             if (b.teamCrowns > b.opponentCrowns) { outcome = "Vitória"; cls = "win"; }
             else if (b.teamCrowns < b.opponentCrowns) { outcome = "Derrota"; cls = "lose"; }
             else { outcome = "Empate"; cls = "draw"; }
-          } else if (b.result) {
-            outcome = String(b.result).toLowerCase() === "win" ? "Vitória"
-                    : String(b.result).toLowerCase() === "loss" ? "Derrota"
-                    : "Empate";
-            cls = outcome === "Vitória" ? "win" : outcome === "Derrota" ? "lose" : "draw";
           }
-
           const opp = b.opponentName || b.opponentTag || "-";
           tr.className = cls;
-          tr.innerHTML = `
-            <td>${date}</td>
-            <td>${mode}</td>
-            <td>${outcome}</td>
-            <td>${escapeHtml(opp)}</td>
-          `;
-          tbody.appendChild(tr);
+          tr.innerHTML = `<td>${dateStr}</td><td>${mode}</td><td>${outcome}</td><td>${escapeHtml(opp)}</td>`;
+          $('tbody').appendChild(tr);
         }
-        results.style.display = 'block';
-        msg.textContent = `Mostrando ${Math.min(20, data.length)} partidas.`;
 
-        // 2) Insights
-        try {
-          const iRes = await fetch(`/api/insights?tag=${encodeURIComponent(tag)}`);
-          if (iRes.ok) {
-            const ins = await iRes.json();
-            const panel = document.getElementById('insightsPanel');
-            const wl = `${ins.wins || 0} vit / ${ins.losses || 0} der / ${ins.draws || 0} emp`;
+        // Insights
+        const ins = all.insights || {};
+        $('kpiWinrate').textContent = (ins.winrate ?? 0) + '%';
+        $('kpiWL').textContent = `${ins.wins || 0} vit / ${ins.losses || 0} der / ${ins.draws || 0} emp`;
+        const sType = ins.streak?.type === 'W' ? 'Vitórias' : ins.streak?.type === 'L' ? 'Derrotas' : 'Empates';
+        const sCount = ins.streak?.count || 0;
+        $('kpiStreak').textContent = sCount ? `${sCount} ${sType}` : '–';
+        const start = pad2(ins.bestWindow?.start), end = pad2(ins.bestWindow?.end);
+        $('kpiWindow').textContent = (ins.bestWindow && ins.bestWindow.games >= 3) ? `${start}:00–${end}:00` : '–';
+        $('kpiWindowNote').textContent = (ins.bestWindow && ins.bestWindow.games >= 3) ? `${ins.bestWindow.winrate}% em ${ins.bestWindow.games} jogos` : '';
+        if (ins.topDeck?.signature) {
+          const parts = ins.topDeck.signature.split(' | ');
+          const nice = parts.slice(0,4).join(' · ') + (parts.length>4 ? '…' : '');
+          $('kpiDeck').textContent = nice;
+          $('kpiDeckNote').textContent = `${ins.topDeck.winrate}% em ${ins.topDeck.games} jogos`;
+        } else {
+          $('kpiDeck').textContent = '—'; $('kpiDeckNote').textContent = '';
+        }
+        const tips = Array.isArray(ins.tips) ? ins.tips : [];
+        $('tipsList').innerHTML = tips.map(t => `<li>${escapeHtml(t)}</li>`).join('');
 
-            document.getElementById('kpiWinrate').textContent = (ins.winrate ?? 0) + '%';
-            document.getElementById('kpiWL').textContent = wl;
+        // Recomendações (meta + matchups)
+        const rec = all.reco || {};
+        $('myDeckView').textContent = rec.myDeck ? `Seu deck detectado: ${rec.myDeck}` : '';
+        const list = $('recoList');
+        list.innerHTML = '';
+        for (const it of (rec.items || [])) {
+          const swaps = (it.swaps || []).map(s => `<span class="swap">${escapeHtml(s.remove)} → <strong>${escapeHtml(s.add)}</strong></span> <small class="muted">${escapeHtml(s.reason)}</small>`).join('<br/>');
+          const tipsLi = (it.tips || []).map(t => `<li>${escapeHtml(t)}</li>`).join('');
+          const meta  = it.metaApprox ? `<div class="muted" style="margin-top:4px">Meta parecido: <em>${escapeHtml(it.metaApprox.title)}</em>${it.metaApprox.winrate ? ` • ${it.metaApprox.winrate}%` : ''}</div>` : '';
+          const el = document.createElement('div');
+          el.className = 'reco-item';
+          el.innerHTML = `
+            <div><strong>Deck enfrentado</strong>: ${escapeHtml(it.opponentDeck)}</div>
+            <div class="muted">Você enfrentou ${it.facedCount}× • seu WR: ${it.myWR}%</div>
+            ${meta}
+            <div style="margin-top:8px"><strong>Trocas sugeridas</strong><br/>${swaps || '<span class="muted">Sem trocas óbvias — mantenha consistência.</span>'}</div>
+            <ul class="tips">${tipsLi}</ul>
+          `;
+          list.appendChild(el);
+        }
+        $('recoFoot').textContent = (rec.tips || []).join(' • ');
+        if ((rec.items || []).length) $('recoPanel').style.display = 'block';
 
-            const sType = ins.streak?.type === 'W' ? 'Vitórias'
-                        : ins.streak?.type === 'L' ? 'Derrotas'
-                        : 'Empates';
-            const sCount = ins.streak?.count || 0;
-            document.getElementById('kpiStreak').textContent = sCount ? `${sCount} ${sType}` : '–';
-
-            const start = pad2(ins.bestWindow?.start), end = pad2(ins.bestWindow?.end);
-            document.getElementById('kpiWindow').textContent =
-              (ins.bestWindow && ins.bestWindow.games >= 3) ? `${start}:00–${end}:00` : '–';
-            document.getElementById('kpiWindowNote').textContent =
-              (ins.bestWindow && ins.bestWindow.games >= 3) ? `${ins.bestWindow.winrate}% em ${ins.bestWindow.games} jogos` : '';
-
-            if (ins.topDeck?.signature) {
-              const nice = ins.topDeck.signature.split(' | ').slice(0,4).join(' · ') + (ins.topDeck.signature.split(' | ').length>4 ? '…' : '');
-              document.getElementById('kpiDeck').textContent = nice;
-              document.getElementById('kpiDeckNote').textContent = `${ins.topDeck.winrate}% em ${ins.topDeck.games} jogos`;
-            } else {
-              document.getElementById('kpiDeck').textContent = '—';
-              document.getElementById('kpiDeckNote').textContent = '';
-            }
-
-            const tips = Array.isArray(ins.tips) ? ins.tips : [];
-            const ul = document.getElementById('tipsList');
-            ul.innerHTML = tips.map(t => `<li>${escapeHtml(t)}</li>`).join('');
-
-            panel.style.display = 'block';
-          }
-        } catch(_) { /* silencioso */ }
-
-        // 3) Recomendações (meta + matchups)
-        try {
-          const rRes = await fetch(`/api/reco?tag=${encodeURIComponent(tag)}`);
-          if (rRes.ok) {
-            const rec = await rRes.json();
-            const panel = document.getElementById('recoPanel');
-            const list  = document.getElementById('recoList');
-            const foot  = document.getElementById('recoFoot');
-            const my    = document.getElementById('myDeckView');
-
-            my.textContent = rec.myDeck ? `Seu deck detectado: ${rec.myDeck}` : '';
-
-            list.innerHTML = '';
-            for (const it of (rec.items || [])) {
-              const swaps = (it.swaps || []).map(s => `<span class="swap">${escapeHtml(s.remove)} → <strong>${escapeHtml(s.add)}</strong></span> <small class="muted">${escapeHtml(s.reason)}</small>`).join('<br/>');
-              const tips  = (it.tips || []).map(t => `<li>${escapeHtml(t)}</li>`).join('');
-              const meta  = it.metaApprox ? `<div class="muted" style="margin-top:4px">Meta parecido: <em>${escapeHtml(it.metaApprox.title)}</em>${it.metaApprox.winrate ? ` • ${it.metaApprox.winrate}%` : ''}</div>` : '';
-
-              const el = document.createElement('div');
-              el.className = 'reco-item';
-              el.innerHTML = `
-                <div><strong>Deck enfrentado</strong>: ${escapeHtml(it.opponentDeck)}</div>
-                <div class="muted">Você enfrentou ${it.facedCount}× • seu WR: ${it.myWR}%</div>
-                ${meta}
-                <div style="margin-top:8px"><strong>Trocas sugeridas</strong><br/>${swaps || '<span class="muted">Sem trocas óbvias — mantenha consistência.</span>'}</div>
-                <ul class="tips">${tips}</ul>
-              `;
-              list.appendChild(el);
-            }
-            foot.textContent = (rec.tips || []).join(' • ');
-            panel.style.display = 'block';
-          }
-        } catch(_) { /* silencioso */ }
-
-      } catch (e){
-        msg.textContent = 'Não consegui buscar agora. O site está ok — tente novamente mais tarde.';
+        // Exibe áreas
+        $('tabs').style.display = 'flex';
+        showTab('insights');
+        $('insightsSection').style.display = 'block';
+        $('historySection').style.display = 'block';
+        $('msg').textContent = `Pronto! Dados de ${Math.min(20, (all.battles || []).length)} partidas recentes.`;
+      } catch {
+        $('msg').textContent = 'Não consegui buscar agora. Tente novamente em instantes.';
       }
-    });
+    }
   </script>
 </body>
 </html>
