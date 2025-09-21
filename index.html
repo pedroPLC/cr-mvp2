@@ -4,47 +4,69 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CR Coach (MVP)</title>
-  <meta name="description" content="Cole seu TAG e receba insights automáticos. Aba principal: Insights & Recomendações. Aba separada: Histórico." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300E5FF'/%3E%3Ctext x='50' y='58' font-size='42' text-anchor='middle' fill='black' font-family='Arial'%3ECR%3C/text%3E%3C/svg%3E" />
+  <meta name="description" content="Cole seu TAG e receba insights automáticos: perfil, winrate, streak, melhor horário, recomendações vs meta, e veja seu deck com dicas. O histórico fica em outra aba." />
+  <!-- Favicon: simple CR-like circle with initials -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='3' y='3' width='94' height='94' rx='16' fill='%231e79c1'/%3E%3Ctext x='50' y='60' font-size='42' text-anchor='middle' fill='%23ffd166' font-family='Arial Black,Arial'%3ECR%3C/text%3E%3C/svg%3E" />
   <style>
+    /*
+      Clash Royale inspired palette: deep blues and gold accents.
+      Variables centralize colours for easy tweaking.
+    */
     :root{
-      --bg:#0b0f1a; --panel:#111726; --muted:#8aa0b6; --text:#eaf2ff;
-      --brand:#00e5ff; --brand-2:#7cf3c3; --ring:rgba(0,229,255,.35);
-      --shadow:0 10px 25px rgba(0,0,0,.35); --radius:16px; --maxw:1120px;
-      --ok:#10e07d; --bad:#ff5b6e; --mid:#b1bdd1;
+      --bg:#0e1f42;            /* dark royal blue background */
+      --panel:#152e57;         /* panel background */
+      --muted:#8faed0;         /* muted text */
+      --text:#f5faff;          /* primary text colour */
+      --brand:#3183e8;         /* primary accent (blue) */
+      --brand-2:#ffd166;       /* secondary accent (gold) */
+      --ring:rgba(49,131,232,.35); /* focus ring */
+      --shadow:0 10px 25px rgba(0,0,0,.35);
+      --ok:#34c37d;            /* success colour */
+      --bad:#e9515b;           /* failure colour */
+      --mid:#bdbdc6;           /* neutral colour */
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:radial-gradient(1200px 700px at 10% -10%, #0d1b2a 0%, transparent 60%), radial-gradient(900px 500px at 90% 0%, #122b39 0%, transparent 55%), var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial; line-height:1.5}
+    *{box-sizing:border-box; margin:0; padding:0}
+    html,body{background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial; line-height:1.5}
     a{color:inherit; text-decoration:none}
-    .container{max-width:var(--maxw); margin-inline:auto; padding:0 20px}
-    header{position:sticky; top:0; backdrop-filter:saturate(140%) blur(8px); background:rgba(11,15,26,.55); border-bottom:1px solid rgba(255,255,255,.06); z-index:10}
+    .container{max-width:1120px; margin:0 auto; padding:0 20px}
+    header{position:sticky; top:0; backdrop-filter:saturate(140%) blur(8px); background:rgba(14,31,66,.7); border-bottom:1px solid rgba(255,255,255,.08); z-index:10}
     .nav{display:flex; align-items:center; justify-content:space-between; height:64px}
-    .brand{display:flex; align-items:center; gap:10px; font-weight:800}
-    .brand-dot{width:12px; height:12px; border-radius:50%; background:linear-gradient(135deg,var(--brand),var(--brand-2))}
-    .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); color:var(--text); box-shadow:var(--shadow); transition:.2s}
-    .btn.brand{border-color:transparent; background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#061018; font-weight:700}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px}
+    .brand-dot{width:12px; height:12px; border-radius:50%; background:linear-gradient(135deg,var(--brand),var(--brand-2)); box-shadow:0 0 0 4px rgba(49,131,232,.25)}
+    .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); color:var(--text); box-shadow:var(--shadow); cursor:pointer; transition:.2s transform, .2s box-shadow}
+    .btn:hover{transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,.5)}
+    .btn.brand{border-color:transparent; background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#142e57; font-weight:700}
     .panel{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.1); border-radius:16px; box-shadow:var(--shadow)}
     .panel-pad{padding:18px}
     .muted{color:var(--muted)}
-    .tabs{display:flex; gap:10px; margin-top:12px}
-    .tab{padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); cursor:pointer}
-    .tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#061018; border-color:transparent; font-weight:700}
-    .kpis{display:grid; gap:14px; grid-template-columns:repeat(4, minmax(150px,1fr)); margin-top:16px}
-    .kpi{background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px}
-    .kpi h4{margin:0 0 6px; font-size:14px; color:#b7c4d6}
+    .tabs{display:flex; gap:10px; margin-top:16px}
+    .tab{padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.05); cursor:pointer; font-weight:600}
+    .tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#142e57; border-color:transparent}
+    .kpis{display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); margin-top:16px}
+    .kpi{background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px}
+    .kpi h4{margin-bottom:6px; font-size:14px; color:#b7c4d6; font-weight:600}
     .kpi .big{font-size:24px; font-weight:800}
     .kpi small{color:#8aa0b6}
-    .tips{margin-top:12px; color:#cfe2ff}
+    .tips{margin-top:12px; color:#cfe2ff; list-style-position:inside}
     .tips li{margin:6px 0}
-    .table{width:100%; border-collapse:collapse; font-size:14px}
-    .table th, .table td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.07)}
-    .win  td:nth-child(3){ color:var(--ok); font-weight:700 }
+    .table{width:100%; border-collapse:collapse; font-size:14px; margin-top:12px}
+    .table th,.table td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.08)}
+    .win td:nth-child(3){ color:var(--ok); font-weight:700 }
     .lose td:nth-child(3){ color:var(--bad); font-weight:700 }
     .draw td:nth-child(3){ color:var(--mid); font-weight:700 }
     .reco{display:grid; gap:14px; grid-template-columns:1fr}
     .reco-item{border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02))}
     .swap{display:inline-block; margin:6px 0; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); font-size:13px}
-    @media (max-width: 900px){ .kpis{grid-template-columns:1fr 1fr} }
+    /* Deck viewer */
+    .deck-grid{display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(80px,1fr)); margin-top:8px}
+    .deck-card{display:flex; flex-direction:column; align-items:center; justify-content:flex-start}
+    .deck-card img{width:64px; height:80px; border-radius:8px; border:1px solid rgba(255,255,255,.12); background:#1e3460; object-fit:cover; box-shadow:0 4px 8px rgba(0,0,0,.4)}
+    .deck-card span{margin-top:4px; font-size:12px; text-align:center; color:var(--muted)}
+    .deck-tips{margin-top:12px; color:#d4e3fa; list-style-position:inside; font-size:14px}
+    .deck-tips li{margin:4px 0}
+    @media(max-width:600px){
+      .kpis{grid-template-columns:1fr 1fr}
+    }
   </style>
 </head>
 <body>
@@ -57,28 +79,29 @@
 
   <section id="coach" class="container" style="padding:48px 0 24px">
     <div class="panel panel-pad">
-      <h2 style="margin:0 0 10px">CR Coach</h2>
-      <p class="muted" style="margin:0 0 12px">Cole o TAG para ver **perfil, insights e recomendações**. O histórico fica na aba ao lado.</p>
-
+      <h2 style="margin-bottom:8px">CR Coach</h2>
+      <p class="muted" style="margin-bottom:12px">Cole o TAG para ver seu <strong>perfil</strong>, <strong>insights</strong>, <strong>recomendações</strong> e <strong>seu deck</strong>. O histórico completo fica na aba ao lado.</p>
       <div style="display:flex; gap:10px; flex-wrap:wrap">
-        <input id="tagInput" class="input" placeholder="#ABCD123" style="flex:1; min-width:240px; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:#0c1322; color:#eaf2ff; outline:none" />
+        <input id="tagInput" class="input" placeholder="#ABCD123" style="flex:1; min-width:240px; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:#1a3466; color:var(--text); outline:none" />
         <button id="btnFetch" class="btn brand">Ver insights</button>
       </div>
-
       <div id="msg" class="muted" style="margin-top:12px"></div>
 
+      <!-- Profile panel -->
       <div id="profile" class="panel panel-pad" style="display:none; margin-top:12px">
         <div id="pName" style="font-size:20px; font-weight:800">Player</div>
         <div id="pMeta" class="muted" style="margin-top:4px">#TAG • Arena • Troféus</div>
       </div>
 
+      <!-- Tabs -->
       <div class="tabs" id="tabs" style="display:none">
-        <div id="tab-insights" class="tab active">Insights & Recomendações</div>
+        <div id="tab-insights" class="tab active">Insights &amp; Recomendações</div>
         <div id="tab-history" class="tab">Histórico</div>
       </div>
 
-      <!-- INSIGHTS -->
-      <div id="insightsSection" style="display:none; margin-top:12px">
+      <!-- Insights & deck section -->
+      <div id="insightsSection" style="display:none; margin-top:16px">
+        <!-- KPIs -->
         <div class="kpis">
           <div class="kpi"><h4>Winrate</h4><div class="big" id="kpiWinrate">--%</div><small id="kpiWL">– vit / – der / – emp</small></div>
           <div class="kpi"><h4>Streak</h4><div class="big" id="kpiStreak">–</div><small>sequência atual</small></div>
@@ -86,18 +109,24 @@
           <div class="kpi"><h4>Deck mais usado</h4><div class="big" id="kpiDeck">–</div><small id="kpiDeckNote"></small></div>
         </div>
         <ul class="tips" id="tipsList"></ul>
-
-        <div id="recoPanel" style="display:none; margin-top:18px">
+        <!-- Deck viewer -->
+        <div id="deckPanel" style="display:none; margin-top:18px">
+          <h3 style="margin:10px 0 8px">Seu Deck &amp; Dicas</h3>
+          <div class="deck-grid" id="deckGrid"></div>
+          <ul class="deck-tips" id="deckTips"></ul>
+        </div>
+        <!-- Recommendations vs meta -->
+        <div id="recoPanel" style="display:none; margin-top:24px">
           <h3 style="margin:10px 0 8px">Recomendações vs Meta</h3>
           <div class="muted" id="myDeckView" style="margin-bottom:6px"></div>
           <div class="reco" id="recoList"></div>
           <div class="muted" id="recoFoot" style="margin-top:8px"></div>
-          <div class="muted" style="margin-top:8px; font-size:12px">Fonte: RoyaleAPI (7d, Ranked).</div>
+          <div class="muted" style="margin-top:8px; font-size:12px">Fonte: RoyaleAPI (7d, Ranked). Use como referência.</div>
         </div>
       </div>
 
-      <!-- HISTÓRICO -->
-      <div id="historySection" style="display:none; margin-top:12px; overflow:auto">
+      <!-- History section -->
+      <div id="historySection" style="display:none; margin-top:16px; overflow:auto">
         <table class="table">
           <thead><tr><th>Data</th><th>Modo</th><th>Resultado</th><th>Oponente</th></tr></thead>
           <tbody id="tbody"></tbody>
@@ -106,41 +135,63 @@
     </div>
   </section>
 
-  <footer><div class="container" style="color:#8aa0b6">© <span id="y"></span> CR Coach — MVP</div></footer>
+  <footer><div class="container" style="padding:24px 0; color:var(--muted); text-align:center">© <span id="year"></span> CR Coach — MVP</div></footer>
 
   <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
-
-    // utils
+    // Utilities
     const $ = (id) => document.getElementById(id);
+    document.getElementById('year').textContent = new Date().getFullYear();
+
     function cleanTag(tag){ return String(tag || '').trim().replace(/^#/, '').toUpperCase(); }
     function pad2(n){ return String(n ?? '').padStart(2,'0'); }
-    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-    function safeDateStr(iso){
-      // evita datas "1969" caso venha inválido
-      const d1 = new Date(iso);
-      if (!isNaN(d1.getTime())) return d1.toLocaleString();
-      const d2 = new Date(String(iso).replace(' ', 'T'));
-      return isNaN(d2.getTime()) ? '-' : d2.toLocaleString();
+    function escapeHtml(s){ return String(s).replace(/[&<>"]+/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+    function safeDateStr(iso){ const d = new Date(iso); return isNaN(d.getTime()) ? '-' : d.toLocaleString(); }
+    function slugify(name){ return name.toLowerCase().replace(/\(.*\)/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+    // Card categories for generic tips
+    const WIN_CONDITIONS = ['hog rider','royal hogs','balloon','giant','royal giant','golem','graveyard','x-bow','goblin barrel','miner','ram rider','lava hound','electro giant'];
+    const BUILDINGS = ['cannon','cannon (evolution)','bomb tower','tesla','inferno tower','goblin cage','tombstone','furnace','mortar'];
+    const SPELLS = ['fireball','poison','rocket','lightning','earthquake','the log','arrows','barbarian barrel','royal delivery','snowball','zap','tornado','rage','freeze','clone','mirror'];
+    // Specific tips for notable cards (lowercase keys)
+    const CARD_TIPS = {
+      'hog rider': 'Combine com Ice Golem ou Ice Spirit para ciclar rápido e pressione com Log/Fogos.',
+      'royal hogs': 'Divida os porquinhos e pressione ambos os lados; use feitiço grande para limpar defesa.',
+      'balloon': 'Apoie com DPS aéreo (Musketeer, Wizard) e considere usar Freeze para garantir dano na torre.',
+      'giant': 'Coloque o Giant atrás da torre da princesa para acumular elixir e suporte com unidades à distância.',
+      'royal giant': 'Jogue na ponte quando tiver vantagem de elixir; proteja com caçador ou zappies.',
+      'golem': 'Utilize apenas com grande vantagem de elixir; suporte com Baby Dragon/Night Witch e feitiços.',
+      'graveyard': 'Combine com tanque (Cavaleiro, Bowler) e jogue Poison defensivo contra contra-ataques.',
+      'x-bow': 'Proteja seu X-Bow com Tesla e Arqueiras; use-o defensivamente antes de atacar.',
+      'goblin barrel': 'Varie o posicionamento do Barril para evitar ativação da torre do rei; combine com Princesa.',
+      'miner': 'Use o Mineiro para finalizar torres e tirar tropas de suporte; pareie com Veneno.',
+      'ram rider': 'Use como condição de vitória única; suporte com feitiços para limpar defesas.',
+      'lava hound': 'Apoie o Lava Hound com Balloon e Minions; prepare feitiço para limpar defesa aérea.',
+      'electro giant': 'Jogue na ponte e proteja com Tornado e Tesla para maximizar dano de retorno.'
+    };
+    function getCardTip(cardName){
+      const key = cardName.toLowerCase();
+      if (CARD_TIPS[key]) return CARD_TIPS[key];
+      if (WIN_CONDITIONS.includes(key)) return 'Esta é sua condição de vitória: construa seus pushes em torno dela e proteja-a com suporte adequado.';
+      if (BUILDINGS.includes(key)) return 'Use esta construção no centro para atrair tropas inimigas e proteger suas torres.';
+      if (SPELLS.includes(key)) return 'Este feitiço é versátil: use para remover defesas, dar suporte aos seus ataques ou finalizar torres.';
+      return 'Aproveite o potencial desta carta apoiando sua condição de vitória e complementando sua defesa.';
     }
 
-    // abas
+    // Tab switching
     function showTab(which){
-      const ins = $('insightsSection'), his = $('historySection');
       $('tab-insights').classList.toggle('active', which==='insights');
       $('tab-history').classList.toggle('active', which==='history');
-      ins.style.display = which==='insights' ? 'block' : 'none';
-      his.style.display = which==='history' ? 'block' : 'none';
+      $('insightsSection').style.display = which==='insights' ? 'block' : 'none';
+      $('historySection').style.display = which==='history' ? 'block' : 'none';
     }
     $('tab-insights')?.addEventListener('click', () => showTab('insights'));
     $('tab-history')?.addEventListener('click', () => showTab('history'));
 
-    // botão
+    // Button action
     $('btnFetch').addEventListener('click', () => runCoach(cleanTag($('tagInput').value)));
 
-    // ?tag=
-    (function initFromQuery(){
-      const qp = new URLSearchParams(location.search);
+    // Populate if URL has ?tag=
+    (() => {
+      const qp = new URLSearchParams(window.location.search);
       const t = qp.get('tag');
       if (t) { $('tagInput').value = t; runCoach(cleanTag(t)); }
     })();
@@ -153,16 +204,17 @@
       $('insightsSection').style.display = 'none';
       $('historySection').style.display = 'none';
       $('recoPanel').style.display = 'none';
+      $('deckPanel').style.display = 'none';
       $('tbody').innerHTML = '';
+      $('deckGrid').innerHTML = '';
+      $('deckTips').innerHTML = '';
 
-      // 1) Tenta o agregado
       let coach = null;
       try {
         const res = await fetch(`/api/coach?tag=${encodeURIComponent(tag)}`);
         if (res.ok) coach = await res.json();
       } catch {}
-
-      // 2) Se o agregado falhar ou vier sem batalhas, busca o battlelog direto (fallback)
+      // fallback: fetch only battlelog if necessary
       if (!coach || !Array.isArray(coach.battles) || coach.battles.length === 0) {
         try {
           const br = await fetch(`/api/battlelog?tag=${encodeURIComponent(tag)}`);
@@ -173,84 +225,100 @@
           }
         } catch {}
       }
-
-      // Se continuou sem batalhas, avisa e sai
       const battles = Array.isArray(coach?.battles) ? coach.battles : [];
-      if (!battles.length) {
-        $('msg').textContent = 'Não consegui carregar seu histórico agora.';
-        return;
-      }
+      if (!battles.length){ $('msg').textContent = 'Não consegui carregar seu histórico agora.'; return; }
 
-      // Perfil (se o coach tiver)
-      if (coach?.player) {
+      // Update URL query for shareability
+      try { history.replaceState({}, '', `?tag=${encodeURIComponent(tag)}`); } catch {}
+
+      // Profile info
+      if (coach.player){
         $('pName').textContent = `${coach.player.name} (${coach.player.level})`;
         $('pMeta').textContent = `${coach.player.tag} • ${coach.player.arena} • ${coach.player.trophies} troféus`;
         $('profile').style.display = 'block';
       }
 
-      // Tabela (sempre que tiver battles)
-      for (const b of battles.slice(0, 20)) {
-        const tr = document.createElement("tr");
+      // Populate history table
+      for (const b of battles.slice(0,20)){
+        const tr = document.createElement('tr');
         const dateStr = b.battleTime ? safeDateStr(b.battleTime) : '-';
-        const mode = b.gameMode?.name || b.type || "-";
-        let outcome = "-", cls = "";
-        if (b.opponentCrowns != null && b.teamCrowns != null) {
-          if (b.teamCrowns > b.opponentCrowns) { outcome = "Vitória"; cls = "win"; }
-          else if (b.teamCrowns < b.opponentCrowns) { outcome = "Derrota"; cls = "lose"; }
-          else { outcome = "Empate"; cls = "draw"; }
+        const mode    = b.gameMode?.name || b.type || '-';
+        let outcome = '-', cls='';
+        if (b.opponentCrowns != null && b.teamCrowns != null){
+          if (b.teamCrowns > b.opponentCrowns){ outcome='Vitória'; cls='win'; }
+          else if (b.teamCrowns < b.opponentCrowns){ outcome='Derrota'; cls='lose'; }
+          else { outcome='Empate'; cls='draw'; }
         }
-        const opp = b.opponentName || b.opponentTag || "-";
+        const opp = b.opponentName || b.opponentTag || '-';
         tr.className = cls;
-        tr.innerHTML = `<td>${dateStr}</td><td>${mode}</td><td>${outcome}</td><td>${escapeHtml(opp)}</td>`;
+        tr.innerHTML = `<td>${dateStr}</td><td>${escapeHtml(mode)}</td><td>${outcome}</td><td>${escapeHtml(opp)}</td>`;
         $('tbody').appendChild(tr);
       }
 
-      // Insights (se vier)
-      const ins = coach?.insights || {};
-      if (ins && (ins.wins!=null || ins.losses!=null)) {
+      // Insights
+      const ins = coach.insights || {};
+      if (ins && (ins.wins!=null || ins.losses!=null)){
         $('kpiWinrate').textContent = (ins.winrate ?? 0) + '%';
         $('kpiWL').textContent = `${ins.wins || 0} vit / ${ins.losses || 0} der / ${ins.draws || 0} emp`;
         const sType = ins.streak?.type === 'W' ? 'Vitórias' : ins.streak?.type === 'L' ? 'Derrotas' : 'Empates';
-        const sCount = ins.streak?.count || 0;
+        const sCount= ins.streak?.count || 0;
         $('kpiStreak').textContent = sCount ? `${sCount} ${sType}` : '–';
-        const start = pad2(ins.bestWindow?.start), end = pad2(ins.bestWindow?.end);
+        const start = pad2(ins.bestWindow?.start), end=pad2(ins.bestWindow?.end);
         $('kpiWindow').textContent = (ins.bestWindow && ins.bestWindow.games >= 3) ? `${start}:00–${end}:00` : '–';
         $('kpiWindowNote').textContent = (ins.bestWindow && ins.bestWindow.games >= 3) ? `${ins.bestWindow.winrate}% em ${ins.bestWindow.games} jogos` : '';
-        if (ins.topDeck?.signature) {
+        if (ins.topDeck?.signature){
           const parts = ins.topDeck.signature.split(' | ');
           const nice = parts.slice(0,4).join(' · ') + (parts.length>4 ? '…' : '');
           $('kpiDeck').textContent = nice;
           $('kpiDeckNote').textContent = `${ins.topDeck.winrate}% em ${ins.topDeck.games} jogos`;
         } else { $('kpiDeck').textContent = '—'; $('kpiDeckNote').textContent = ''; }
-        const tips = Array.isArray(ins.tips) ? ins.tips : [];
-        $('tipsList').innerHTML = tips.map(t => `<li>${escapeHtml(t)}</li>`).join('');
+        const tipsArr = Array.isArray(ins.tips) ? ins.tips : [];
+        $('tipsList').innerHTML = tipsArr.map(t => `<li>${escapeHtml(t)}</li>`).join('');
       }
 
-      // Recomendações (se vier)
-      const rec = coach?.reco || {};
-      if ((rec.items || []).length) {
+      // Deck viewer (from first battle)
+      const firstBattle = battles.find(b => Array.isArray(b.teamCards) && b.teamCards.length >= 8);
+      if (firstBattle){
+        const deck = firstBattle.teamCards;
+        const grid = $('deckGrid');
+        const tipsSet = new Set();
+        deck.forEach(card => {
+          const slug = slugify(card);
+          const cardDiv = document.createElement('div');
+          cardDiv.className = 'deck-card';
+          cardDiv.innerHTML = `<img src="https://royaleapi.com/static/img/cards-150/${slug}.png" alt="${escapeHtml(card)}"/><span>${escapeHtml(card)}</span>`;
+          grid.appendChild(cardDiv);
+          const tip = getCardTip(card);
+          if (tip) tipsSet.add(tip);
+        });
+        const tipsList = [...tipsSet];
+        $('deckTips').innerHTML = tipsList.map(t => `<li>${escapeHtml(t)}</li>`).join('');
+        $('deckPanel').style.display = 'block';
+      }
+
+      // Recommendations vs meta
+      const rec = coach.reco || {};
+      if (rec.items && rec.items.length){
         $('myDeckView').textContent = rec.myDeck ? `Seu deck detectado: ${rec.myDeck}` : '';
         const list = $('recoList'); list.innerHTML = '';
-        for (const it of (rec.items || [])) {
+        for (const it of rec.items){
           const swaps = (it.swaps || []).map(s => `<span class="swap">${escapeHtml(s.remove)} → <strong>${escapeHtml(s.add)}</strong></span> <small class="muted">${escapeHtml(s.reason)}</small>`).join('<br/>');
           const tipsLi = (it.tips || []).map(t => `<li>${escapeHtml(t)}</li>`).join('');
-          const meta  = it.metaApprox ? `<div class="muted" style="margin-top:4px">Meta parecido: <em>${escapeHtml(it.metaApprox.title)}</em>${it.metaApprox.winrate ? ` • ${it.metaApprox.winrate}%` : ''}</div>` : '';
+          const meta = it.metaApprox ? `<div class="muted" style="margin-top:4px">Meta parecido: <em>${escapeHtml(it.metaApprox.title)}</em>${it.metaApprox.winrate ? ` • ${it.metaApprox.winrate}%` : ''}</div>` : '';
           const el = document.createElement('div');
           el.className = 'reco-item';
-          el.innerHTML = `
-            <div><strong>Deck enfrentado</strong>: ${escapeHtml(it.opponentDeck)}</div>
-            <div class="muted">Você enfrentou ${it.facedCount}× • seu WR: ${it.myWR}%</div>
-            ${meta}
-            <div style="margin-top:8px"><strong>Trocas sugeridas</strong><br/>${swaps || '<span class="muted">Sem trocas óbvias — mantenha consistência.</span>'}</div>
-            <ul class="tips">${tipsLi}</ul>
-          `;
+          el.innerHTML = `<div><strong>Deck enfrentado</strong>: ${escapeHtml(it.opponentDeck)}</div>`+
+                          `<div class="muted">Você enfrentou ${it.facedCount}× • seu WR: ${it.myWR}%</div>`+
+                          `${meta}`+
+                          `<div style="margin-top:8px"><strong>Trocas sugeridas</strong><br/>${swaps || '<span class="muted">Sem trocas óbvias — mantenha consistência.</span>'}</div>`+
+                          `<ul class="tips">${tipsLi}</ul>`;
           list.appendChild(el);
         }
         $('recoFoot').textContent = (rec.tips || []).join(' • ');
         $('recoPanel').style.display = 'block';
       }
 
-      // Exibir abas/áreas
+      // Display sections
       $('tabs').style.display = 'flex';
       $('insightsSection').style.display = 'block';
       $('historySection').style.display = 'block';
